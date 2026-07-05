@@ -7,7 +7,7 @@ board.
 
 **Live demo:** _add your Vercel URL here after deploying_
 
-![screenshot placeholder](#)
+<img width="1872" height="1170" alt="image" src="https://github.com/user-attachments/assets/0ff7258a-bbcc-42b0-833b-760d23b70157" />
 
 ## Features
 - 4 pathfinding algorithms: Breadth-First Search, Depth-First Search,
