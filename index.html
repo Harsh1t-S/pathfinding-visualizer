@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PATHTRACE // pathfinding visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-glyph">&gt;_</span>
+      <div class="brand-text">
+        <h1>PATHTRACE</h1>
+        <p>grid signal routing / v1.0</p>
+      </div>
+    </div>
+    <div class="status" id="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">idle — grid ready</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel controls">
+      <div class="control-group">
+        <label class="control-label">01 / algorithm</label>
+        <select id="algoSelect" class="select">
+          <option value="bfs">Breadth-First Search</option>
+          <option value="dfs">Depth-First Search</option>
+          <option value="dijkstra">Dijkstra</option>
+          <option value="astar">A* Search</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">02 / tool</label>
+        <div class="tool-row">
+          <button class="tool-btn active" data-tool="wall">Wall</button>
+          <button class="tool-btn" data-tool="start">Start</button>
+          <button class="tool-btn" data-tool="end">End</button>
+          <button class="tool-btn" data-tool="erase">Erase</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">03 / speed</label>
+        <input type="range" id="speedRange" min="1" max="10" value="6" class="slider" />
+      </div>
+
+      <div class="control-group actions">
+        <button id="runBtn" class="btn primary">▶ Run trace</button>
+        <button id="mazeBtn" class="btn">▦ Random maze</button>
+        <button id="clearWallsBtn" class="btn">Clear walls</button>
+        <button id="clearAllBtn" class="btn ghost">Reset grid</button>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="swatch swatch-start"></span>Start node</div>
+        <div class="legend-item"><span class="swatch swatch-end"></span>End node</div>
+        <div class="legend-item"><span class="swatch swatch-wall"></span>Wall / obstacle</div>
+        <div class="legend-item"><span class="swatch swatch-visited"></span>Visited trace</div>
+        <div class="legend-item"><span class="swatch swatch-path"></span>Shortest path</div>
+      </div>
+
+      <div class="readout" id="readout">
+        <div><span>nodes visited</span><strong id="visitedCount">0</strong></div>
+        <div><span>path length</span><strong id="pathCount">0</strong></div>
+        <div><span>trace time</span><strong id="traceTime">0ms</strong></div>
+      </div>
+    </section>
+
+    <section class="panel board-wrap">
+      <div id="grid" class="grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    click + drag to draw walls · select a tool to move start / end · built with vanilla JS
+  </footer>
+
+<script src="script.js"></script>
+</body>
+</html>
