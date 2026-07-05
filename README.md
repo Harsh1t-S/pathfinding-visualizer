@@ -5,7 +5,7 @@ watch **BFS**, **DFS**, **Dijkstra**, or **A\*** race across the board to find
 a route — with the shortest path lighting up like a signal trace on a circuit
 board.
 
-**Live demo:** _add your Vercel URL here after deploying_
+**Live demo:** [ Click here](https://pathfinding-visualizer-gilt.vercel.app/)
 
 <img width="1872" height="1170" alt="image" src="https://github.com/user-attachments/assets/0ff7258a-bbcc-42b0-833b-760d23b70157" />
 
