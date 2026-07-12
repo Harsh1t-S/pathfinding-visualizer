@@ -15,7 +15,7 @@
       <span class="brand-glyph">&gt;_</span>
       <div class="brand-text">
         <h1>PATHTRACE</h1>
-        <p>grid signal routing / v1.0</p>
+        <p>grid signal routing / v2.0</p>
       </div>
     </div>
     <div class="status" id="status">
@@ -33,17 +33,24 @@
           <option value="dfs">Depth-First Search</option>
           <option value="dijkstra">Dijkstra</option>
           <option value="astar">A* Search</option>
+          <option value="greedy">Greedy Best-First</option>
         </select>
+        <label class="toggle-row">
+          <input type="checkbox" id="diagToggle" />
+          <span>allow diagonal movement</span>
+        </label>
       </div>
 
       <div class="control-group">
         <label class="control-label">02 / tool</label>
         <div class="tool-row">
           <button class="tool-btn active" data-tool="wall">Wall</button>
+          <button class="tool-btn" data-tool="weight">Weight</button>
           <button class="tool-btn" data-tool="start">Start</button>
           <button class="tool-btn" data-tool="end">End</button>
           <button class="tool-btn" data-tool="erase">Erase</button>
         </div>
+        <p class="hint">tip: drag the start / end nodes directly — after a run, the trace updates live as you drag.</p>
       </div>
 
       <div class="control-group">
@@ -53,7 +60,7 @@
 
       <div class="control-group actions">
         <button id="runBtn" class="btn primary">▶ Run trace</button>
-        <button id="mazeBtn" class="btn">▦ Random maze</button>
+        <button id="mazeBtn" class="btn">▦ Generate maze</button>
         <button id="clearWallsBtn" class="btn">Clear walls</button>
         <button id="clearAllBtn" class="btn ghost">Reset grid</button>
       </div>
@@ -62,6 +69,7 @@
         <div class="legend-item"><span class="swatch swatch-start"></span>Start node</div>
         <div class="legend-item"><span class="swatch swatch-end"></span>End node</div>
         <div class="legend-item"><span class="swatch swatch-wall"></span>Wall / obstacle</div>
+        <div class="legend-item"><span class="swatch swatch-weight"></span>Weighted (cost 5)</div>
         <div class="legend-item"><span class="swatch swatch-visited"></span>Visited trace</div>
         <div class="legend-item"><span class="swatch swatch-path"></span>Shortest path</div>
       </div>
@@ -79,7 +87,7 @@
   </main>
 
   <footer class="footer">
-    click + drag to draw walls · select a tool to move start / end · built with vanilla JS
+    click + drag to draw walls · drag start / end nodes directly · built with vanilla JS
   </footer>
 
 <script src="script.js"></script>
