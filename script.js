@@ -4,13 +4,14 @@ const COLS = 31;
 const WEIGHT_COST = 5;
 
 const gridEl = document.getElementById('grid');
-gridEl.style.gridTemplateColumns = `repeat(${COLS}, 26px)`;
-gridEl.style.gridTemplateRows = `repeat(${ROWS}, 26px)`;
+gridEl.style.gridTemplateColumns = `repeat(${COLS}, var(--cell))`;
+gridEl.style.gridTemplateRows = `repeat(${ROWS}, var(--cell))`;
 
 let grid = [];
 let startNode = { row: 8, col: 6 };
 let endNode = { row: 8, col: 24 };
 let isMouseDown = false;
+let mouseButton = 0;        // 0 = left, 2 = right (right-drag erases)
 let currentTool = 'wall';
 let isRunning = false;
 let dragging = null;        // 'start' | 'end' | null — direct drag without tool switch
@@ -43,14 +44,15 @@ function createGrid() {
       cellEl.addEventListener('mousedown', (e) => {
         e.preventDefault();
         if (isRunning) return;
-        if (node.isStart) { dragging = 'start'; return; }
-        if (node.isEnd) { dragging = 'end'; return; }
-        handleCellAction(node, cellEl);
+        mouseButton = e.button;
+        if (e.button === 0 && node.isStart) { dragging = 'start'; return; }
+        if (e.button === 0 && node.isEnd) { dragging = 'end'; return; }
+        applyTool(node, cellEl, e.button === 2 ? 'erase' : currentTool);
       });
       cellEl.addEventListener('mouseenter', () => {
         if (isRunning) return;
         if (dragging) { moveEndpoint(dragging, node); return; }
-        if (isMouseDown) handleCellAction(node, cellEl);
+        if (isMouseDown) applyTool(node, cellEl, mouseButton === 2 ? 'erase' : currentTool);
       });
       node.el = cellEl;
       gridEl.appendChild(cellEl);
@@ -59,6 +61,8 @@ function createGrid() {
     grid.push(rowArr);
   }
 }
+
+gridEl.addEventListener('contextmenu', (e) => e.preventDefault());
 
 function moveEndpoint(which, node) {
   if (node.isWall || node.isStart || node.isEnd) return;
@@ -75,32 +79,33 @@ function moveEndpoint(which, node) {
   if (lastRunAlgo) instantTrace();
 }
 
-function handleCellAction(node, cellEl) {
+function applyTool(node, cellEl, tool) {
   if (isRunning) return;
-  if (currentTool === 'wall') {
+  if (tool === 'wall') {
     if (node.isStart || node.isEnd) return;
     node.isWall = true;
     node.weight = 1;
     cellEl.classList.add('wall');
     cellEl.classList.remove('weight');
-  } else if (currentTool === 'weight') {
+  } else if (tool === 'weight') {
     if (node.isStart || node.isEnd || node.isWall) return;
     node.weight = node.weight === 1 ? WEIGHT_COST : 1;
     cellEl.classList.toggle('weight', node.weight > 1);
-  } else if (currentTool === 'erase') {
+  } else if (tool === 'erase') {
+    if (node.isStart || node.isEnd) return;
     node.isWall = false;
     node.weight = 1;
     cellEl.classList.remove('wall', 'weight');
-  } else if (currentTool === 'start') {
+  } else if (tool === 'start') {
     if (node.isEnd || node.isWall) return;
     moveEndpoint('start', node);
-  } else if (currentTool === 'end') {
+  } else if (tool === 'end') {
     if (node.isStart || node.isWall) return;
     moveEndpoint('end', node);
   }
 }
 
-document.addEventListener('mousedown', () => isMouseDown = true);
+document.addEventListener('mousedown', (e) => { isMouseDown = true; mouseButton = e.button; });
 document.addEventListener('mouseup', () => { isMouseDown = false; dragging = null; });
 
 // Touch support — map touches onto cells
@@ -113,20 +118,57 @@ function handleTouch(e) {
   const el = document.elementFromPoint(t.clientX, t.clientY);
   if (el && el.classList.contains('cell')) {
     const node = grid[+el.dataset.row][+el.dataset.col];
-    handleCellAction(node, el);
+    applyTool(node, el, currentTool);
   }
 }
 
+// ---------- Tools + toolbar ----------
+function selectTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+}
 document.querySelectorAll('.tool-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentTool = btn.dataset.tool;
-  });
+  btn.addEventListener('click', () => selectTool(btn.dataset.tool));
 });
 
 const diagToggle = document.getElementById('diagToggle');
-diagToggle.addEventListener('change', () => { allowDiagonal = diagToggle.checked; });
+diagToggle.addEventListener('change', () => { allowDiagonal = diagToggle.checked; if (lastRunAlgo) instantTrace(); });
+
+// ---------- Algorithm descriptions ----------
+const algoDescriptions = {
+  bfs: 'Explores level by level. Guarantees shortest path on unweighted grids; ignores weights.',
+  dfs: 'Dives deep before backtracking. Fast but paths are usually far from optimal.',
+  dijkstra: 'Expands by lowest total cost. Guarantees the cheapest path, respects weights.',
+  astar: 'Dijkstra + heuristic pull toward the target. Optimal path, far fewer nodes visited.',
+  greedy: 'Chases the heuristic only. Very fast, but the path may not be optimal.',
+};
+const algoSelect = document.getElementById('algoSelect');
+const algoDescEl = document.getElementById('algoDesc');
+function updateAlgoDesc() { algoDescEl.textContent = algoDescriptions[algoSelect.value]; }
+algoSelect.addEventListener('change', updateAlgoDesc);
+updateAlgoDesc();
+
+// ---------- Speed label ----------
+const speedRange = document.getElementById('speedRange');
+const speedLabel = document.getElementById('speedLabel');
+function updateSpeedLabel() {
+  const v = Number(speedRange.value);
+  speedLabel.textContent = v <= 3 ? 'slow' : v <= 7 ? 'normal' : 'fast';
+}
+speedRange.addEventListener('input', updateSpeedLabel);
+updateSpeedLabel();
+
+// ---------- Keyboard shortcuts ----------
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (isRunning) return;
+  const toolKeys = { '1': 'wall', '2': 'weight', '3': 'start', '4': 'end', '5': 'erase' };
+  if (toolKeys[e.key]) { selectTool(toolKeys[e.key]); return; }
+  if (e.code === 'Space') { e.preventDefault(); document.getElementById('runBtn').click(); }
+  else if (e.key === 'm') document.getElementById('mazeBtn').click();
+  else if (e.key === 'c') document.getElementById('clearWallsBtn').click();
+  else if (e.key === 'r') document.getElementById('clearAllBtn').click();
+});
 
 // ---------- Reset helpers ----------
 function resetVisualState() {
@@ -148,6 +190,7 @@ document.getElementById('clearWallsBtn').addEventListener('click', () => {
     node.weight = 1;
     node.el.classList.remove('wall', 'weight');
   }
+  setStatus('idle', 'walls cleared');
 });
 
 document.getElementById('clearAllBtn').addEventListener('click', () => {
@@ -184,7 +227,7 @@ document.getElementById('mazeBtn').addEventListener('click', async () => {
     await sleep(6);
   }
   setControlsDisabled(false);
-  setStatus('idle', 'maze ready');
+  setStatus('idle', 'maze ready — hit space');
 });
 
 function recursiveDivide(rMin, rMax, cMin, cMax, walls) {
@@ -210,7 +253,7 @@ function recursiveDivide(rMin, rMax, cMin, cMax, walls) {
     const holes = [];
     for (let r = rMin; r <= rMax; r += 2) holes.push(r);
     const hole = holes[Math.floor(Math.random() * holes.length)];
-    for (let r = rMin; r <= rMax; r++) if (r !== hole) walls.push([wallCol && true ? r : r, wallCol]);
+    for (let r = rMin; r <= rMax; r++) if (r !== hole) walls.push([r, wallCol]);
     recursiveDivide(rMin, rMax, cMin, wallCol - 1, walls);
     recursiveDivide(rMin, rMax, wallCol + 1, cMax, walls);
   }
@@ -416,7 +459,7 @@ function updateReadout(visited, pathLen, ms) {
 }
 
 function setControlsDisabled(disabled) {
-  document.querySelectorAll('.btn, .tool-btn, .select').forEach(el => el.disabled = disabled);
+  document.querySelectorAll('.btn, .tool-btn, .select, .slider, .toggle-row input').forEach(el => el.disabled = disabled);
   isRunning = disabled;
 }
 
@@ -450,10 +493,10 @@ document.getElementById('runBtn').addEventListener('click', () => {
   setControlsDisabled(true);
   setStatus('running', 'tracing…');
 
-  const algoName = document.getElementById('algoSelect').value;
+  const algoName = algoSelect.value;
   const { visitedOrder, path, ms } = runAlgorithm(algoName);
 
-  const speed = 11 - Number(document.getElementById('speedRange').value);
+  const speed = 11 - Number(speedRange.value);
   const stepDelay = Math.max(2, speed * 4);
 
   visitedOrder.forEach((node, i) => {
@@ -461,7 +504,8 @@ document.getElementById('runBtn').addEventListener('click', () => {
       if (!node.isStart && !node.isEnd) node.el.classList.add('visited');
       if (i === visitedOrder.length - 1) {
         setTimeout(() => animatePath(path, () => {
-          setStatus('done', path.length > 1 ? 'trace complete — path found' : 'trace complete — no path found');
+          const label = algoSelect.options[algoSelect.selectedIndex].text;
+          setStatus('done', path.length > 1 ? `${label} — path found` : `${label} — no path`);
           updateReadout(visitedOrder.length, path.length > 1 ? path.length : 0, ms);
           setControlsDisabled(false);
           lastRunAlgo = algoName;
@@ -469,11 +513,6 @@ document.getElementById('runBtn').addEventListener('click', () => {
       }
     }, i * stepDelay);
   });
-
-  if (visitedOrder.length === 0) {
-    setControlsDisabled(false);
-    setStatus('idle', 'nothing to trace');
-  }
 });
 
 function animatePath(path, done) {

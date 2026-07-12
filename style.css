@@ -10,8 +10,11 @@
   --text:#c9e6d8;
   --text-dim:#5f8a78;
   --wall:#12211c;
+  --cell:26px;
   --mono:'JetBrains Mono', ui-monospace, monospace;
 }
+@media (max-width:1100px){ :root{ --cell:22px; } }
+@media (max-width:700px){ :root{ --cell:18px; } }
 
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
@@ -33,8 +36,9 @@ body{
 }
 
 .topbar{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:20px 28px;
+  position:sticky; top:0; z-index:40;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  padding:14px 28px;
   border-bottom:1px solid var(--line);
   background:linear-gradient(180deg, #0d1210, #0a0e0d);
 }
@@ -47,8 +51,17 @@ body{
 .brand-text h1{margin:0; font-size:18px; letter-spacing:3px; color:var(--green); text-shadow:0 0 6px rgba(94,255,156,0.4);}
 .brand-text p{margin:2px 0 0; font-size:11px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase;}
 
-.status{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim); letter-spacing:1px;}
-.status-dot{width:8px; height:8px; border-radius:50%; background:var(--green-dim); box-shadow:0 0 6px var(--green-dim);}
+.topstats{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.stat{
+  display:flex; align-items:baseline; gap:7px;
+  background:#0c1310; border:1px solid var(--line); border-radius:4px;
+  padding:7px 12px; font-size:11px;
+}
+.stat span{color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; font-size:10px;}
+.stat strong{color:var(--green); font-size:14px; min-width:2ch; text-align:right;}
+
+.status{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-dim); letter-spacing:1px; padding-left:6px;}
+.status-dot{width:8px; height:8px; border-radius:50%; background:var(--green-dim); box-shadow:0 0 6px var(--green-dim); flex:none;}
 .status-dot.running{background:var(--amber); box-shadow:0 0 10px var(--amber); animation:pulse 0.8s infinite;}
 .status-dot.done{background:var(--green); box-shadow:0 0 10px var(--green);}
 @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.35;}}
@@ -75,6 +88,7 @@ body{
   width:100%; background:#0c1310; border:1px solid var(--line); color:var(--text);
   padding:10px; border-radius:4px; font-family:var(--mono); font-size:13px;
 }
+.algo-desc{margin:8px 0 0; font-size:10.5px; color:var(--text-dim); line-height:1.55; min-height:32px;}
 .toggle-row{
   display:flex; align-items:center; gap:8px; margin-top:10px;
   font-size:11.5px; color:var(--text-dim); cursor:pointer;
@@ -106,7 +120,7 @@ body{
 
 .legend{display:flex; flex-direction:column; gap:8px; margin-bottom:20px; font-size:11.5px; color:var(--text-dim);}
 .legend-item{display:flex; align-items:center; gap:8px;}
-.swatch{width:12px; height:12px; border-radius:2px; display:inline-block; border:1px solid var(--line);}
+.swatch{width:12px; height:12px; border-radius:2px; display:inline-block; border:1px solid var(--line); flex:none;}
 .swatch-start{background:var(--green);}
 .swatch-end{background:var(--red);}
 .swatch-wall{background:var(--wall); border-color:#274539;}
@@ -114,9 +128,11 @@ body{
 .swatch-visited{background:#123424;}
 .swatch-path{background:var(--amber);}
 
-.readout{border-top:1px solid var(--line); padding-top:14px; display:flex; flex-direction:column; gap:8px;}
-.readout div{display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-dim);}
-.readout strong{color:var(--green); font-size:13px;}
+.shortcuts{border-top:1px solid var(--line); padding-top:14px; font-size:10.5px; color:var(--text-dim); line-height:1.8;}
+.shortcuts kbd{
+  background:#0c1310; border:1px solid var(--line); border-bottom-width:2px;
+  border-radius:3px; padding:1px 5px; font-family:var(--mono); font-size:10px; color:var(--text);
+}
 
 .board-wrap{overflow:auto;}
 .grid{
@@ -126,7 +142,7 @@ body{
   margin:0 auto;
 }
 .cell{
-  width:26px; height:26px;
+  width:var(--cell); height:var(--cell);
   background:#0c1512;
   border:1px solid #142019;
   border-radius:2px;
@@ -157,3 +173,5 @@ body{
   text-align:center; padding:16px; font-size:11px; color:var(--text-dim);
   border-top:1px solid var(--line); letter-spacing:0.5px;
 }
+.footer a{color:var(--text-dim);}
+.footer a:hover{color:var(--green);}

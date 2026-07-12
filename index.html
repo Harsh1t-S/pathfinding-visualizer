@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PATHTRACE // pathfinding visualizer</title>
+<title>PathTrace — Pathfinding Algorithm Visualizer</title>
+<meta name="description" content="Interactive visualizer for BFS, DFS, Dijkstra, A* and Greedy Best-First — weighted terrain, maze generation, live re-tracing. Vanilla JS." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e0d'/%3E%3Cpath d='M6 22 L12 22 L12 14 L20 14 L20 8 L26 8' stroke='%235eff9c' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
@@ -14,13 +16,19 @@
     <div class="brand">
       <span class="brand-glyph">&gt;_</span>
       <div class="brand-text">
-        <h1>PATHTRACE</h1>
-        <p>grid signal routing / v2.0</p>
+        <h1>PathTrace</h1>
+        <p>pathfinding algorithm visualizer</p>
       </div>
     </div>
-    <div class="status" id="status">
-      <span class="status-dot" id="statusDot"></span>
-      <span id="statusText">idle — grid ready</span>
+
+    <div class="topstats" id="readout">
+      <div class="stat"><span>visited</span><strong id="visitedCount">0</strong></div>
+      <div class="stat"><span>path</span><strong id="pathCount">0</strong></div>
+      <div class="stat"><span>time</span><strong id="traceTime">0ms</strong></div>
+      <div class="status" id="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">idle — grid ready</span>
+      </div>
     </div>
   </header>
 
@@ -35,6 +43,7 @@
           <option value="astar">A* Search</option>
           <option value="greedy">Greedy Best-First</option>
         </select>
+        <p class="algo-desc" id="algoDesc"></p>
         <label class="toggle-row">
           <input type="checkbox" id="diagToggle" />
           <span>allow diagonal movement</span>
@@ -44,25 +53,25 @@
       <div class="control-group">
         <label class="control-label">02 / tool</label>
         <div class="tool-row">
-          <button class="tool-btn active" data-tool="wall">Wall</button>
-          <button class="tool-btn" data-tool="weight">Weight</button>
-          <button class="tool-btn" data-tool="start">Start</button>
-          <button class="tool-btn" data-tool="end">End</button>
-          <button class="tool-btn" data-tool="erase">Erase</button>
+          <button class="tool-btn active" data-tool="wall" title="shortcut: 1">Wall</button>
+          <button class="tool-btn" data-tool="weight" title="shortcut: 2">Weight</button>
+          <button class="tool-btn" data-tool="start" title="shortcut: 3">Start</button>
+          <button class="tool-btn" data-tool="end" title="shortcut: 4">End</button>
+          <button class="tool-btn" data-tool="erase" title="shortcut: 5">Erase</button>
         </div>
-        <p class="hint">tip: drag the start / end nodes directly — after a run, the trace updates live as you drag.</p>
+        <p class="hint">drag start / end nodes directly — after a run the trace updates live. right-click drag erases.</p>
       </div>
 
       <div class="control-group">
-        <label class="control-label">03 / speed</label>
+        <label class="control-label">03 / speed · <span id="speedLabel">normal</span></label>
         <input type="range" id="speedRange" min="1" max="10" value="6" class="slider" />
       </div>
 
       <div class="control-group actions">
-        <button id="runBtn" class="btn primary">▶ Run trace</button>
-        <button id="mazeBtn" class="btn">▦ Generate maze</button>
-        <button id="clearWallsBtn" class="btn">Clear walls</button>
-        <button id="clearAllBtn" class="btn ghost">Reset grid</button>
+        <button id="runBtn" class="btn primary" title="shortcut: space">▶ Run trace</button>
+        <button id="mazeBtn" class="btn" title="shortcut: m">▦ Generate maze</button>
+        <button id="clearWallsBtn" class="btn" title="shortcut: c">Clear walls</button>
+        <button id="clearAllBtn" class="btn ghost" title="shortcut: r">Reset grid</button>
       </div>
 
       <div class="legend">
@@ -74,10 +83,9 @@
         <div class="legend-item"><span class="swatch swatch-path"></span>Shortest path</div>
       </div>
 
-      <div class="readout" id="readout">
-        <div><span>nodes visited</span><strong id="visitedCount">0</strong></div>
-        <div><span>path length</span><strong id="pathCount">0</strong></div>
-        <div><span>trace time</span><strong id="traceTime">0ms</strong></div>
+      <div class="shortcuts">
+        <span class="control-label">keyboard</span>
+        <div><kbd>space</kbd> run · <kbd>m</kbd> maze · <kbd>c</kbd> clear walls · <kbd>r</kbd> reset · <kbd>1–5</kbd> tools</div>
       </div>
     </section>
 
@@ -87,7 +95,7 @@
   </main>
 
   <footer class="footer">
-    click + drag to draw walls · drag start / end nodes directly · built with vanilla JS
+    built with vanilla JS · no frameworks · <a href="https://github.com/Harsh1t-S/pathfinding-visualizer" target="_blank" rel="noopener">source on GitHub</a>
   </footer>
 
 <script src="script.js"></script>
